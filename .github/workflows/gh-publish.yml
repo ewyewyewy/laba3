@@ -14,11 +14,13 @@ jobs:
     steps:
       - name: Checkout source code
         uses: actions/checkout@v4
+
       - name: Setup Godot Export Templates
         run: |
           mkdir -p ~/.local/share/godot/export_templates/
           wget -q https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_mono_export_templates.tpz
           unzip -q Godot_v${GODOT_VERSION}-stable_mono_export_templates.tpz
+          mkdir -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono/
           cp -r templates/* ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono/
 
       - name: Export Game
@@ -30,6 +32,7 @@ jobs:
           cache: true
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+
       - name: Create Release
         uses: ncipollo/release-action@v1.18.0
         with:
