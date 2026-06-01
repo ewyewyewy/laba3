@@ -8,6 +8,8 @@ env:
 jobs:
   export-game:
     runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:4.6.1
     permissions:
       contents: write
     name: Export game
