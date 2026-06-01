@@ -9,7 +9,7 @@ jobs:
   export-game:
     runs-on: ubuntu-latest
     container:
-      image: barichello/godot-ci:4.6.1
+      image: barichello/godot-ci:4.6.1-mono
     permissions:
       contents: write
     name: Export game
