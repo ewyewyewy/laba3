@@ -8,24 +8,29 @@ env:
 jobs:
   export-game:
     runs-on: ubuntu-latest
-    container:
-      image: barichello/godot-ci:4.6.1-mono
     permissions:
       contents: write
     name: Export game
     steps:
       - name: Checkout source code
-        uses: actions/checkout@v3
-      - name: Godot Export
+        uses: actions/checkout@v4
+      - name: Setup Godot Export Templates
+        run: |
+          mkdir -p ~/.local/share/godot/export_templates/
+          wget -q https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_mono_export_templates.tpz
+          unzip -q Godot_v${GODOT_VERSION}-stable_mono_export_templates.tpz
+          cp -r templates/* ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono/
+
+      - name: Export Game
         id: export
         uses: firebelley/godot-export@v7.0.0
         with:
-          godot_executable_download_url: https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
+          godot_executable_download_url: https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_mono_linux_x86_64.zip
           relative_project_path: ./platformer
           cache: true
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-      - name: create release
+      - name: Create Release
         uses: ncipollo/release-action@v1.18.0
         with:
           token: ${{ secrets.GH_TOKEN }}
