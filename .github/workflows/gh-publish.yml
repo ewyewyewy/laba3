@@ -2,8 +2,6 @@ name: godot-ci
 on:
   push:
     branches: [ main ]
-env:
-  GODOT_VERSION: 4.6.1
 
 jobs:
   export-game:
@@ -15,28 +13,21 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v4
 
-      - name: Setup Godot Export Templates
-        run: |
-          mkdir -p ~/.local/share/godot/export_templates/
-          wget -q https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_mono_export_templates.tpz
-          unzip -q Godot_v${GODOT_VERSION}-stable_mono_export_templates.tpz
-          mkdir -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono/
-          cp -r templates/* ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono/
-
-      - name: Export Game
+      - name: Export game
         id: export
         uses: firebelley/godot-export@v7.0.0
         with:
-          godot_executable_download_url: https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_mono_linux_x86_64.zip
+          godot_version: 4.6.1
+          godot_dotnet: true
           relative_project_path: ./platformer
-          cache: true
+          export_preset: "2dgame-windows"
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create Release
         uses: ncipollo/release-action@v1.18.0
         with:
-          token: ${{ secrets.GH_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           generateReleaseNotes: true
           tag: ${{ github.ref_name }}
           artifacts: ${{ steps.export.outputs.archive_directory }}/*
