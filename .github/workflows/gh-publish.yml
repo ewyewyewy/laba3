@@ -6,28 +6,26 @@ on:
 jobs:
   export-game:
     runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:4.2.2
     permissions:
       contents: write
-    name: Export game
     steps:
-      - name: Checkout source code
+      - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Export game
-        id: export
-        uses: firebelley/godot-export@v7.0.0
         with:
-          godot_version: 4.6.1
-          godot_dotnet: true
-          relative_project_path: ./platformer
-          export_preset: "2dgame-windows"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
 
-      - name: Create Release
+      - name: Export Game
+        run: |
+          mkdir -p build/windows
+          godot --headless --export-release "2dgame-windows" build/windows/game.exe
+
+      - name: Upload Release
         uses: ncipollo/release-action@v1.18.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           generateReleaseNotes: true
           tag: ${{ github.ref_name }}
-          artifacts: ${{ steps.export.outputs.archive_directory }}/*
+          artifacts: build/windows/game.exe
+          allowUpdates: true
