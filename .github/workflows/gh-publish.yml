@@ -6,26 +6,35 @@ on:
 jobs:
   export-game:
     runs-on: ubuntu-latest
-    container:
-      image: barichello/godot-ci:4.2.2
     permissions:
       contents: write
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Export Game
+      - name: Download Godot
         run: |
-          mkdir -p build/windows
-          godot --headless --export-release "2dgame-windows" build/windows/game.exe
+          wget -q https://github.com/godotengine/godot/releases/download/4.6.1-stable/Godot_v4.6.1-stable_mono_linux_x86_64.zip
+          unzip -q Godot_v4.6.1-stable_mono_linux_x86_64.zip
+          chmod +x Godot_v4.6.1-stable_mono_linux_x86_64
 
-      - name: Upload Release
+      - name: Download Export Templates
+        run: |
+          wget -q https://github.com/godotengine/godot/releases/download/4.6.1-stable/Godot_v4.6.1-stable_mono_export_templates.tpz
+          mkdir -p ~/.local/share/godot/export_templates/4.6.1.stable.mono/
+          unzip -q Godot_v4.6.1-stable_mono_export_templates.tpz -d templates_temp
+          cp -r templates_temp/templates/* ~/.local/share/godot/export_templates/4.6.1.stable.mono/
+
+      - name: Export game
+        run: |
+          mkdir -p build
+          ./Godot_v4.6.1-stable_mono_linux_x86_64 --headless --export-release "2dgame-windows" build/game.exe
+
+      - name: Upload to Release
         uses: ncipollo/release-action@v1.18.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           generateReleaseNotes: true
           tag: ${{ github.ref_name }}
-          artifacts: build/windows/game.exe
+          artifacts: build/game.exe
           allowUpdates: true
