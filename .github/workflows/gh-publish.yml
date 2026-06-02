@@ -6,36 +6,18 @@ on:
 jobs:
   export-game:
     runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:4.6.1
     permissions:
       contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Download Godot
-        run: |
-          wget -q https://github.com/godotengine/godot/releases/download/4.6.1-stable/Godot_v4.6.1-stable_mono_linux_x86_64.zip
-          unzip -q Godot_v4.6.1-stable_mono_linux_x86_64.zip
-          chmod +x Godot_v4.6.1-stable_mono_linux_x86_64
-          ls -la Godot*
-
-      - name: Download Export Templates
-        run: |
-          wget -q https://github.com/godotengine/godot/releases/download/4.6.1-stable/Godot_v4.6.1-stable_mono_export_templates.tpz
-          mkdir -p ~/.local/share/godot/export_templates/4.6.1.stable.mono/
-          unzip -q Godot_v4.6.1-stable_mono_export_templates.tpz -d templates_temp
-          cp -r templates_temp/templates/* ~/.local/share/godot/export_templates/4.6.1.stable.mono/
-          ls -la ~/.local/share/godot/export_templates/4.6.1.stable.mono/
-
-      - name: List project files
-        run: |
-          ls -la platformer/
-          cat platformer/export_presets.cfg | head -20
-
       - name: Export game
         run: |
           mkdir -p build
-          ./Godot_v4.6.1-stable_mono_linux_x86_64 --headless --export-release "2dgame-windows" build/game.exe
+          godot --headless --export-release "2dgame-windows" build/game.exe
 
       - name: Upload to Release
         uses: ncipollo/release-action@v1.18.0
