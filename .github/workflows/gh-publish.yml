@@ -1,44 +1,52 @@
-name: godot-ci
+name: gh-publish
 
-
-on:
- push:
-   branches: [ "main" ]
-
-
-env:
- GODOT_VERSION: 4.6.1
-
+on: [push]
 
 jobs:
- export-game:
-   name: Lab3 game
-   runs-on: ubuntu-latest
-   permissions:
-     contents: write
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Debug - show file structure
+        run: |
+          echo "=== Текущая директория ==="
+          pwd
+          ls -la
+
+          echo "=== Ищем project.godot ==="
+          find . -name "project.godot" -type f
+
+          echo "=== Ищем export_presets.cfg ==="
+          find . -name "export_presets.cfg" -type f
+
+      - name: Copy project files to root
+        run: |
+          cp -r laba3/platformer/* .
+          cp -r laba3/platformer/.[!.]* . 2>/dev/null || true
+          echo "=== Файлы скопированы в корень ==="
+          ls -la
+
+      - name: Godot Export
+        uses: firebelley/godot-export@v7.0.0
+        with:
+          godot_executable_download_url: https://github.com/godotengine/godot/releases/download/4.6.1-stable/Godot_v4.6.1-stable_linux_headless.x86_64
+          godot_export_templates_download_url: https://github.com/godotengine/godot/releases/download/4.6.1-stable/Godot_v4.6.1-stable_export_templates.tpz
+          relative_project_path: ./
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: game-build
+          path: builds/
 
 
-   steps:
-     - name: Checkout source code
-       uses: actions/checkout@v3
 
 
-     - name: Godot Export
-       id: export
-       uses: firebelley/godot-export@v7.0.0
-       with:
-         godot_executable_download_url: "https://github.com/godotengine/godot/releases/download/${{ env.GODOT_VERSION }}-stable/Godot_v${{ env.GODOT_VERSION }}-stable_linux.x86_64.zip"
-         godot_export_templates_download_url: "https://github.com/godotengine/godot/releases/download/${{ env.GODOT_VERSION }}-stable/Godot_v${{ env.GODOT_VERSION }}-stable_export_templates.tpz"
-         relative_project_path: laba3/platformer/
-         cache: true
-         archive_output: true
 
 
-     - name: Create release
-       uses: ncipollo/release-action@v1.18.0
-       with:
-         token: ${{ secrets.GITHUB_TOKEN }}
-         allowUpdates: true
-         tag: ${{ github.ref_name }}
-         artifacts: /home/runner/.local/share/godot/archives/*.zip
+
+
 
