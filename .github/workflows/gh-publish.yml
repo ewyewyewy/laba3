@@ -24,6 +24,7 @@ jobs:
           mkdir -p ~/.local/share/godot/export_templates/4.6.1.stable.mono/
           unzip -q Godot_v4.6.1-stable_mono_export_templates.tpz -d templates_temp
           cp -r templates_temp/templates/* ~/.local/share/godot/export_templates/4.6.1.stable.mono/
+          chmod +x ~/.local/share/godot/export_templates/4.6.1.stable.mono/*
 
       - name: Export game
         run: |
