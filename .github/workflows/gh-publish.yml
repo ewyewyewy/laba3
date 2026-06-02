@@ -10,38 +10,23 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Debug - show structure
+      - name: Find and copy project files
         run: |
-          echo "=== Все файлы и папки ==="
-          ls -la
-          echo ""
-          echo "=== Поиск project.godot ==="
-          find . -name "project.godot"
-          echo ""
-          echo "=== Поиск export_presets.cfg ==="
-          find . -name "export_presets.cfg"
-
-      - name: Copy project files to root (dynamic path)
-        run: |
-          # Находим папку с project.godot
           PROJECT_PATH=$(find . -name "project.godot" -type f | head -1 | xargs dirname)
-          echo "Project found at: $PROJECT_PATH"
-
-          if [ -n "$PROJECT_PATH" ]; then
+          if [ -n "$PROJECT_PATH" ] && [ "$PROJECT_PATH" != "." ]; then
             cp -r $PROJECT_PATH/* .
-            echo "Files copied from $PROJECT_PATH"
-          else
-            echo "ERROR: project.godot not found!"
-            exit 1
           fi
-          ls -la
 
-      - name: Godot Export
-        uses: firebelley/godot-export@v7.0.0
+      - name: Setup Godot
+        uses: lihop/setup-godot@v3
         with:
-          godot_executable_download_url: https://github.com/godotengine/godot/releases/download/4.6.1-stable/Godot_v4.6.1-stable_linux_headless.x86_64
-          godot_export_templates_download_url: https://github.com/godotengine/godot/releases/download/4.6.1-stable/Godot_v4.6.1-stable_export_templates.tpz
-          relative_project_path: ./
+          version: 4.2.1  # Используйте стабильную версию
+          export-templates: true
+
+      - name: Export game
+        run: |
+          mkdir -p builds
+          godot --headless --export-release "Linux/X11" ./builds/game.x86_64
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
