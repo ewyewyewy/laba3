@@ -1,29 +1,44 @@
 name: godot-ci
+
+
 on:
-  push:
-    branches: [ main ]
+ push:
+   branches: [ "main" ]
+
+
+env:
+ GODOT_VERSION: 4.6.3
+
 
 jobs:
-  export-game:
-    runs-on: ubuntu-latest
-    container:
-      image: barichello/godot-ci:4.6.1
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+ export-game:
+   name: Lab3 game
+   runs-on: ubuntu-latest
+   permissions:
+     contents: write
 
-      - name: Export game
-        run: |
-          mkdir -p build
-          godot --headless --export-release "2dgame-windows" build/game.exe
 
-      - name: Upload to Release
-        uses: ncipollo/release-action@v1.18.0
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          generateReleaseNotes: true
-          tag: ${{ github.ref_name }}
-          artifacts: build/game.exe
-          allowUpdates: true
+   steps:
+     - name: Checkout source code
+       uses: actions/checkout@v3
+
+
+     - name: Godot Export
+       id: export
+       uses: firebelley/godot-export@v7.0.0
+       with:
+         godot_executable_download_url: "https://github.com/godotengine/godot/releases/download/${{ env.GODOT_VERSION }}-stable/Godot_v${{ env.GODOT_VERSION }}-stable_linux.x86_64.zip"
+         godot_export_templates_download_url: "https://github.com/godotengine/godot/releases/download/${{ env.GODOT_VERSION }}-stable/Godot_v${{ env.GODOT_VERSION }}-stable_export_templates.tpz"
+         relative_project_path: ./
+         cache: true
+         archive_output: true
+
+
+     - name: Create release
+       uses: ncipollo/release-action@v1.18.0
+       with:
+         token: ${{ secrets.GITHUB_TOKEN }}
+         allowUpdates: true
+         tag: ${{ github.ref_name }}
+         artifacts: /home/runner/.local/share/godot/archives/*.zip
+
